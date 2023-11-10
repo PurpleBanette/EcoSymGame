@@ -11,6 +11,12 @@ public class cs_creature_testDecomposer : cs_creatureData
         creatureHpCurrent = creatureHpMax;
     }
 
+    public override void CreatureNameDistribution()
+    {
+        creatureName = "Test Decomposer Cube";
+        creatureType = "Decomposer";
+    }
+
     /*public override void Test() //Example of inheriting and overriding functions
     {
         base.Test(); //Runs original code first
