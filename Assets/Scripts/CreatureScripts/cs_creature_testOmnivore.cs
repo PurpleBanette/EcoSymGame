@@ -6,9 +6,14 @@ public class cs_creature_testOmnivore : cs_creatureData
 {
     private void Start()
     {
-        //Test();
         IndividualCreatureBaseStatGrowth();
         creatureHpCurrent = creatureHpMax;
+    }
+
+    public override void CreatureNameDistribution()
+    {
+        creatureName = "Test Omnivore Cube";
+        creatureType = "Omnivore";
     }
 
     /*public override void Test() //Example of inheriting and overriding functions

@@ -6,16 +6,15 @@ public class cs_creature_testHerbivore : cs_creatureData
 {
     private void Start()
     {
-        //Test();
         IndividualCreatureBaseStatGrowth();
         creatureHpCurrent = creatureHpMax;
     }
 
-    /*public override void Test() //Example of inheriting and overriding functions
+    public override void CreatureNameDistribution()
     {
-        base.Test(); //Runs original code first
-        Debug.Log("testing " + this.gameObject.name + " override"); //Adds new code to function
-    }*/
+        creatureName = "Test Herbivore Cube";
+        creatureType = "Herbivore";
+    }
 
     public override void IndividualCreatureBaseStatGrowth()
     {

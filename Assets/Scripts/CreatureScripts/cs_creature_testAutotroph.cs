@@ -2,20 +2,25 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class cs_creature_testHeterotroph : cs_creatureData
+public class cs_creature_testAutotroph : cs_creatureData
 {
     private void Start()
     {
-        //Test();
         IndividualCreatureBaseStatGrowth();
         creatureHpCurrent = creatureHpMax;
+        ApplyDexToNavSpeed();
     }
 
-    /*public override void Test() //Example of inheriting and overriding functions
+    public override void CreatureMoveRangeDistribution()
     {
-        base.Test(); //Runs original code first
-        Debug.Log("testing " + this.gameObject.name + " override"); //Adds new code to function
-    }*/
+        creatureMoveRange = 3f;
+    }
+
+    public override void CreatureNameDistribution()
+    {
+        creatureName = "Test Autotroph Plant";
+        creatureType = "Autotroph";
+    }
 
     public override void IndividualCreatureBaseStatGrowth()
     {
@@ -34,5 +39,10 @@ public class cs_creature_testHeterotroph : cs_creatureData
         creatureDEF = (int)(baseDef * gradeDefMultiplyer * creatureLevel);
         creatureHP = (int)(baseHp * gradeHpMultiplyer * creatureLevel) + creatureLevel + 10;
         creatureHpMax = creatureHP;
+    }
+
+    public override void ApplyDexToNavSpeed()
+    {
+        creatureNavMeshAgent.speed = creatureDEX;
     }
 }
