@@ -21,8 +21,6 @@ public class cs_creatureData : MonoBehaviour
     [SerializeField] protected Material creatureMaterial;
     [Tooltip("The creature's animator")]
     [SerializeField] protected Animator creatureAnimator;
-    //[Tooltip("Reference to the game manager")]
-    //public cs_gameManager gameManagerScriptReference;*/
 
     [Header("Creature Stats")]
     [Tooltip("The creature's name")]
@@ -53,12 +51,18 @@ public class cs_creatureData : MonoBehaviour
     [SerializeField] protected float creatureColorHue, creatureColorSaturation, creatureColorValue;
     [Tooltip("The chance of mutation of the creature's offspring")]
     [SerializeField] protected float creatureMutationChance;
+    [Tooltip("The current hunger of the creature")]
+    public float creatureHungerMeterCurrent;
+    [Tooltip("The max hunger of the creature")]
+    [SerializeField] float creatureHungerMeterMax;
+    [Tooltip("AUTOTROPHS ONLY: How much food they receive from photosynthesis")]
+    public float photosynthesisHungerFill;
 
     [Header("AI")]
     [Tooltip("The transform that the creature uses to pathfind")]
     public Vector3 creatureTarget;
     [Tooltip("Bool that checks if the creature is moving randomly")]
-    public bool creatureRandomMovementCheck;
+    public bool creatureMovementCheck;
     [Tooltip("The range of how far the creature can walk")]
     [SerializeField] protected float creatureMoveRange;
     [Tooltip("A check that resets the creature if they're stuck walking")]
@@ -69,6 +73,8 @@ public class cs_creatureData : MonoBehaviour
     public NavMeshAgent creatureNavMeshAgent;
     [Tooltip("The timer how long it takes for the creature to think of something to do")]
     public float creatureThinkTimer;
+    [Tooltip("Bool that checks if the creature is hungry")]
+    public bool creatureIsHungry;
 
     private void Awake()
     {
@@ -96,7 +102,8 @@ public class cs_creatureData : MonoBehaviour
 
     private void Update()
     {
-        CreatureRandomMovement();
+        CreatureMovement(); //Random movement
+        CreatureHungerSystem(); //Creature's hunger system
     }
 
     /*public virtual void Test() 
@@ -115,7 +122,9 @@ public class cs_creatureData : MonoBehaviour
         CreatureMutationGrowth();
         creatureThinkTimer = 10f;
         creatureAnimator.SetFloat("animSpeedMultiplier", gradeDexMultiplyer);
-        
+        CreatureHungerStart();
+        PhotosynthesisFillAmount();
+        creatureHungerMeterMax = 100f; //Max hunger on the meter
     }
 
     public virtual void CreatureMoveRangeDistribution() //May change with calculations later
@@ -123,6 +132,15 @@ public class cs_creatureData : MonoBehaviour
         creatureMoveRange = 10f;
     }
 
+    public virtual void CreatureHungerStart()
+    {
+        creatureHungerMeterCurrent = 70f; //Current hunger
+    }
+
+    public virtual void PhotosynthesisFillAmount()
+    {
+        photosynthesisHungerFill = 0f;
+    }
 
     public virtual void CreatureNameDistribution()
     {
@@ -278,22 +296,22 @@ public class cs_creatureData : MonoBehaviour
         switch (creatureSize)
         {
             case 0:
-                creatureObj.transform.localScale = creatureObj.transform.localScale * Random.Range(0.40f, 0.60f); //Tiny
+                creatureObj.transform.localScale = creatureObj.transform.localScale * Random.Range(0.71f, 0.80f); //Tiny
                 break;
             case 1:
-                creatureObj.transform.localScale = creatureObj.transform.localScale * Random.Range(0.61f, 0.80f); //Small
+                creatureObj.transform.localScale = creatureObj.transform.localScale * Random.Range(0.81f, 0.90f); //Small
                 break;
             case 2:
-                creatureObj.transform.localScale = creatureObj.transform.localScale * Random.Range(0.81f, 1.20f); //Medium
+                creatureObj.transform.localScale = creatureObj.transform.localScale * Random.Range(0.91f, 1.10f); //Medium
                 break;
             case 3:
-                creatureObj.transform.localScale = creatureObj.transform.localScale * Random.Range(1.21f, 1.40f); //Large
+                creatureObj.transform.localScale = creatureObj.transform.localScale * Random.Range(1.11f, 1.20f); //Large
                 break;
             case 4:
-                creatureObj.transform.localScale = creatureObj.transform.localScale * Random.Range(1.41f, 1.60f); //Huge
+                creatureObj.transform.localScale = creatureObj.transform.localScale * Random.Range(1.21f, 1.30f); //Huge
                 break;
             case 5:
-                creatureObj.transform.localScale = creatureObj.transform.localScale * Random.Range(1.61f, 2.00f); //Gargantuan
+                creatureObj.transform.localScale = creatureObj.transform.localScale * Random.Range(1.31f, 1.40f); //Massive
                 break;
         }
     }
@@ -349,7 +367,7 @@ public class cs_creatureData : MonoBehaviour
 
     public void CreatureRandomMovementRandomization()
     {
-        int walkableNavmeshMask = 1 << NavMesh.GetAreaFromName("Walkable"); //Sets walkable navmesh to 1
+        /*int walkableNavmeshMask = 1 << NavMesh.GetAreaFromName("Walkable"); //Sets walkable navmesh to 1
         float destinationX = Random.Range(-creatureMoveRange, creatureMoveRange); //Random X
         float destinationZ = Random.Range(-creatureMoveRange, creatureMoveRange); //Random Z
         RaycastHit destinationYTarget; //The raycasted point after a random position is made
@@ -374,34 +392,130 @@ public class cs_creatureData : MonoBehaviour
         else
         {
             creatureAnimator.SetBool("isThinking", true);
+        }*/
+        int nav_notWalkable = 0 << NavMesh.GetAreaFromName("Not Walkable");
+        int nav_walkable = 1 << NavMesh.GetAreaFromName("Walkable"); //Sets walkable navmesh to 1
+        int nav_grass = 2 << NavMesh.GetAreaFromName("Grass");
+        int nav_dirt = 3 << NavMesh.GetAreaFromName("Dirt");
+        int nav_water = 4 << NavMesh.GetAreaFromName("Water");
+        int nav_rocky = 5 << NavMesh.GetAreaFromName("Rocky");
+        int nav_snow = 6 << NavMesh.GetAreaFromName("Snow");
+        int nav_ice = 7 << NavMesh.GetAreaFromName("Ice");
+        int nav_lava = 8 << NavMesh.GetAreaFromName("Lava");
+
+        float destinationX = Random.Range(-creatureMoveRange, creatureMoveRange); //Random X
+        float destinationZ = Random.Range(-creatureMoveRange, creatureMoveRange); //Random Z
+        RaycastHit destinationYTarget; //The raycasted point after a random position is made
+        NavMeshHit finalNavmeshDestination; //The final point that then agent walks to
+
+        //Raycast that finds the Y coordinate of the random point + your position
+        Physics.Raycast(new Vector3(transform.position.x + destinationX, transform.position.y + 10f, transform.position.z + destinationZ), Vector3.down, out destinationYTarget, Mathf.Infinity, groundLayer);
+
+        //Checks if the random point is on the walkable navmesh within a 2ft range
+        bool possibleLocation = NavMesh.SamplePosition(destinationYTarget.point, out finalNavmeshDestination, 2f, NavMesh.AllAreas);
+
+        //Success
+        if (possibleLocation && finalNavmeshDestination.mask != nav_notWalkable)
+        {
+            //Debug.Log(finalNavmeshDestination.mask);
+            creatureTarget = finalNavmeshDestination.position; //Walk here
+            creatureMovementCheck = true; //Creature is now moving
+            creatureAnimator.SetBool("isWalking", true);
         }
+        //Failure
+        else
+        {
+            Debug.Log("cannot walk on " + finalNavmeshDestination.mask);
+            creatureAnimator.SetBool("isThinking", true);
+        }
+
     }
 
-    public void CreatureRandomMovement()
+    public void CreatureMovement()
     {
-        
-        if (creatureRandomMovementCheck) //If bool is active
+
+        if (creatureMovementCheck) //If bool is active
         {
             walkStuckCheck -= Time.deltaTime;
             creatureNavMeshAgent.SetDestination(creatureTarget); //If bool is active, start moving
             Debug.DrawRay(creatureTarget + new Vector3(0, 0.5f, 0), Vector3.down, Color.green);
         }
-        if (Vector3.Distance(transform.position, creatureTarget) < 0.3 && creatureRandomMovementCheck) //If destination reached within a range, stop
+        if (Vector3.Distance(transform.position, creatureTarget) < 0.3 && creatureMovementCheck) //If destination reached within a range, stop
         {
             walkStuckCheck = 30f;
             creatureNavMeshAgent.SetDestination(transform.position);
+            creatureAnimator.SetBool("isThinking", true);
             creatureAnimator.SetBool("isWalking", false);
 
-            creatureRandomMovementCheck = false;
+            creatureMovementCheck = false;
         }
         if (walkStuckCheck <= 0f) //If the creature is stuck after 30 seconds, think again
         {
             walkStuckCheck = 30f;
             creatureNavMeshAgent.SetDestination(transform.position);
-            creatureAnimator.SetBool("isWalking", false);
             creatureAnimator.SetBool("isThinking", true);
+            creatureAnimator.SetBool("isWalking", false);
 
-            creatureRandomMovementCheck = false;
+            creatureMovementCheck = false;
         }
+
+    }
+    void CreatureHungerSystem()
+    {
+        creatureHungerMeterCurrent = (creatureHungerMeterCurrent / creatureHungerMeterMax) * 100f; //Percentage out of 100%
+
+        creatureHungerMeterCurrent -= Time.deltaTime / 20; //How long it takes for hunger to drop
+
+    }
+
+    public void HungerUpdateCheck() //Do not activate on update to save memory
+    {
+        if (creatureHungerMeterCurrent <= 40f)
+        {
+            creatureIsHungry = true;
+            Debug.Log("Hungry");
+        }
+        else
+        {
+            creatureIsHungry = false;
+        }
+    }
+
+    public virtual void SearchForFood()
+    {
+        /*int nav_notWalkable = 0 << NavMesh.GetAreaFromName("Not Walkable");
+        int nav_walkable = 1 << NavMesh.GetAreaFromName("Walkable"); //Sets walkable navmesh to 1
+        int nav_grass = 2 << NavMesh.GetAreaFromName("Grass");
+        int nav_dirt = 3 << NavMesh.GetAreaFromName("Dirt");
+        int nav_water = 4 << NavMesh.GetAreaFromName("Water");
+        int nav_rocky = 5 << NavMesh.GetAreaFromName("Rocky");
+        int nav_snow = 6 << NavMesh.GetAreaFromName("Snow");
+        int nav_ice = 7 << NavMesh.GetAreaFromName("Ice");
+        int nav_lava = 8 << NavMesh.GetAreaFromName("Lava");
+
+        Debug.Log("Looking for food");
+        NavMeshHit potentialFoodSource;
+        bool possibleLocation = NavMesh.SamplePosition(transform.position, out potentialFoodSource, creatureMoveRange*2, NavMesh.AllAreas);
+
+        //Inherited code varies based on what the creature considers food 
+        if (possibleLocation && potentialFoodSource.mask == NavMesh.AllAreas)
+        {
+            Debug.Log("I found food in " + potentialFoodSource.mask + " located at " + potentialFoodSource.position);
+            creatureTarget = potentialFoodSource.position; //Walk here
+            creatureMovementCheck = true; //Creature is now moving
+            creatureAnimator.SetBool("isIdle", false);
+            creatureAnimator.SetBool("isWalking", true);
+            CreatureMovement();
+        }
+        else
+        {
+            Debug.Log("Nothing here");
+            CreatureRandomMovementRandomization();
+        }*/
+    }
+
+    public void AutotrophPhotosynthesis()
+    {
+        creatureHungerMeterCurrent = creatureHungerMeterCurrent + photosynthesisHungerFill;
     }
 }

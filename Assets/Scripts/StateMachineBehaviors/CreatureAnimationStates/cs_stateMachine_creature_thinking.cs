@@ -16,26 +16,41 @@ public class cs_stateMachine_creature_thinking : StateMachineBehaviour
     {
         cs_creatureData creature = animator.GetComponent<cs_creatureData>();
         creature.creatureThinkTimer -= Time.deltaTime * creature.creatureINT;
-        if (creature.creatureThinkTimer <= 0f) animator.SetBool("isThinking", false);
+        if (creature.creatureThinkTimer <= 0f && animator.GetBool("isThinking") == true)
+        {
+            creature.HungerUpdateCheck(); //Check if hungry
+
+            if (creature.creatureIsHungry) //Hungry
+            {
+                creature.SearchForFood();
+            }
+            else //Random action
+            {
+                int possibleDecisions = 2; // exclusive, last number does not count
+                int chooseDecision = Random.Range(0, possibleDecisions);
+
+                switch (chooseDecision)
+                {
+                    case 0: //Return to idle
+                        Debug.Log("Idle");
+                        animator.SetBool("isIdle", true);
+                        break;
+                    case 1: //Walk in a random direction
+                        Debug.Log("RandomWalk");
+                        animator.SetBool("isWalking", true);
+                        creature.CreatureRandomMovementRandomization();
+                        break;
+                }
+            }
+            animator.SetBool("isThinking", false);
+        }
     }
 
     // OnStateExit is called when a transition ends and the state machine finishes evaluating this state
     override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
         cs_creatureData creature = animator.GetComponent<cs_creatureData>();
-        int possibleDecisions = 2; // 0 counts as a decision
-        int chooseDecision = Random.Range(0, possibleDecisions);
-        switch (chooseDecision)
-        {
-            case 0: //Do nothing
-                break;
-            case 1: //Walk in a random direction
-                creature.CreatureRandomMovementRandomization();
-                break;
-        }
         //Reset timer for next time
         creature.creatureThinkTimer = 10f;
-        
-        
     }
 }

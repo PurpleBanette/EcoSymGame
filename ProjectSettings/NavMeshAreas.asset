@@ -11,22 +11,22 @@ NavMeshProjectSettings:
     cost: 1
   - name: Jump
     cost: 2
-  - name: 
+  - name: Grass
     cost: 1
-  - name: 
+  - name: Water
+    cost: 5
+  - name: Rocky
+    cost: 3
+  - name: Dirt
     cost: 1
-  - name: 
-    cost: 1
-  - name: 
-    cost: 1
-  - name: 
-    cost: 1
-  - name: 
-    cost: 1
-  - name: 
-    cost: 1
-  - name: 
-    cost: 1
+  - name: Ice
+    cost: 3
+  - name: Snow
+    cost: 3
+  - name: Lava
+    cost: 10
+  - name: Sand
+    cost: 3
   - name: 
     cost: 1
   - name: 
