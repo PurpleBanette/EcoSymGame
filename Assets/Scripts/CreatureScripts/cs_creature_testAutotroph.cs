@@ -22,6 +22,16 @@ public class cs_creature_testAutotroph : cs_creatureData
         creatureType = "Autotroph";
     }
 
+    public override void CreatureHungerStart()
+    {
+        creatureHungerMeterCurrent = 40f;
+    }
+
+    public override void PhotosynthesisFillAmount()
+    {
+        photosynthesisHungerFill = 10f;
+    }
+
     public override void IndividualCreatureBaseStatGrowth()
     {
         baseStr = 1;
@@ -45,4 +55,10 @@ public class cs_creature_testAutotroph : cs_creatureData
     {
         creatureNavMeshAgent.speed = creatureDEX;
     }
+
+    public override void SearchForFood() //Autotrophs don't need to search
+    {
+        creatureAnimator.SetBool("isEating", true);
+    }
+
 }
