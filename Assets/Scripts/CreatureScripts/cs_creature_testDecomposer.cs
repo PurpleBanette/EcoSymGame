@@ -14,7 +14,7 @@ public class cs_creature_testDecomposer : cs_creatureData
     public override void CreatureNameDistribution()
     {
         creatureName = "Test Decomposer Cube";
-        creatureType = "Decomposer";
+        creatureType = CreatureType.typeDecomposer;
     }
 
     /*public override void Test() //Example of inheriting and overriding functions

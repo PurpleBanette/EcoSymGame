@@ -13,7 +13,7 @@ public class cs_creature_testHerbivore : cs_creatureData
     public override void CreatureNameDistribution()
     {
         creatureName = "Test Herbivore Cube";
-        creatureType = "Herbivore";
+        creatureType = CreatureType.typeHerbivore;
     }
 
     public override void IndividualCreatureBaseStatGrowth()
