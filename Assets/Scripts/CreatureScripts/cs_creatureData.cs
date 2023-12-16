@@ -33,6 +33,10 @@ public class cs_creatureData : MonoBehaviour
     [SerializeField] protected string creatureName;
     [Tooltip("The creature's type")]
     [SerializeField] protected CreatureType creatureType;
+    [Tooltip("The creature's ID")]
+    [SerializeField] protected CreatureID creatureID;
+    [Tooltip("The creature's Fruit ID")]
+    [SerializeField] protected CreatureFruitID creatureFruitID;
     [Tooltip("The creature's health")]
     public int creatureHpCurrent;
     [Tooltip("The creature's maximum health")]
@@ -110,7 +114,7 @@ public class cs_creatureData : MonoBehaviour
 
     private void Start()
     {
-        
+
     }
 
     private void Update()
@@ -127,7 +131,7 @@ public class cs_creatureData : MonoBehaviour
     public void CreatureStatsDistribution() //Starting functions
     {
         CreatureMoveRangeDistribution();
-        CreatureNameDistribution();
+        AssignCreatureIDValues();
         CreatureStatGradeRandomization();
         CreatureSizeRandomization();
         CreatureColorRandomization();
@@ -161,11 +165,13 @@ public class cs_creatureData : MonoBehaviour
         photosynthesisHungerFill = 0f;
     }
 
-    public virtual void CreatureNameDistribution()
+    public virtual void AssignCreatureIDValues()
     {
         /*A null check is needed to prevent errors. Each creature will be assigned their name and type*/
         creatureName = null;
-        creatureType = CreatureType.typeNull;
+        creatureType = CreatureType.t_null;
+        creatureID = CreatureID.c_null;
+        creatureFruitID = CreatureFruitID.f_null;
     }
 
     public void CreatureStatGradeRandomization() 

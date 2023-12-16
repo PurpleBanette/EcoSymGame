@@ -7,7 +7,8 @@ public class cs_creature_testAutotroph : cs_creatureData
     private void Start()
     {
         gameManagerScript.creaturesList.Add(gameObject); //Adds creature to gameManager
-        gameManagerScript.fruitsList.Add(creatureFruit); //Adds fruit prefab to game manager
+        //SpawnFruitPool();
+        //gameManagerScript.fruitsList.Add(creatureFruit); //Adds fruit prefab to game manager
 
         IndividualCreatureBaseStatGrowth();
         creatureHpCurrent = creatureHpMax;
@@ -19,11 +20,25 @@ public class cs_creature_testAutotroph : cs_creatureData
         creatureMoveRange = 3f;
     }
 
-    public override void CreatureNameDistribution() //Add unique name
+    public override void AssignCreatureIDValues() //Add unique name and ID
     {
         creatureName = "Test Autotroph Plant";
-        creatureType = CreatureType.typeAutotroph;
+        creatureType = CreatureType.t_autotroph;
+        creatureID = CreatureID.c_testAutotroph;
+        creatureFruitID = CreatureFruitID.f_testAutotroph;
     }
+
+    /*private void SpawnFruitPool()
+    {
+        GameObject fruitHolder = new GameObject(creatureName + " fruitHolder");
+        for (int i = 0; i < gameManagerScript.fruitPoolAmount; i++)
+        {
+            GameObject newFruit = Instantiate(creatureFruit);
+            newFruit.transform.SetParent(fruitHolder.transform);
+            gameManagerScript.availableFruit.Add(newFruit);
+            newFruit.SetActive(false);
+        }
+    }*/
 
     public override void CreatureHungerStart() //Change hunger start
     {

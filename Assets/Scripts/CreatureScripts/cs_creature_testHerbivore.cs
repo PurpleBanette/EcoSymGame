@@ -10,10 +10,12 @@ public class cs_creature_testHerbivore : cs_creatureData
         creatureHpCurrent = creatureHpMax;
     }
 
-    public override void CreatureNameDistribution()
+    public override void AssignCreatureIDValues()
     {
         creatureName = "Test Herbivore Cube";
-        creatureType = CreatureType.typeHerbivore;
+        creatureType = CreatureType.t_herbivore;
+        creatureID = CreatureID.c_testHerbivore;
+        creatureFruitID = CreatureFruitID.f_null;
     }
 
     public override void IndividualCreatureBaseStatGrowth()

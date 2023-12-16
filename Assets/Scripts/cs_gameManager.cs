@@ -17,22 +17,14 @@ public class cs_gameManager : MonoBehaviour
     [Header("Lists")]
     [Tooltip("Creature scripts in list")]
     public List<GameObject> creaturesList;
-    [Tooltip("Creature fruits scripts in list")]
-    public List<GameObject> fruitsList;
 
     [Header("Object Pools")]
     public ObjectPool<GameObject> fruitPool;
-    public GameObject creaturePrefab;
-    public GameObject fruitPrefab;
-
-
-
     public int fruitPoolAmount;
     public Transform fruitPoolHolder;
     public int lastFruitPulled;
     public List<GameObject> availableFruit;
 
-    // Start is called before the first frame update
     void Awake()
     {
         gameManagerInstance = this;
@@ -44,7 +36,6 @@ public class cs_gameManager : MonoBehaviour
         GenerateFruitPool();
     }
 
-    // Update is called once per frame
     void FixedUpdate()
     {
         CreatureCleanup();
@@ -52,14 +43,30 @@ public class cs_gameManager : MonoBehaviour
 
     public void GenerateFruitPool()
     {
+        /*For each creature in the world, generate a set of fruits that belong to them*/
         fruitPoolHolder = new GameObject("fruitPoolHolder").transform;
+        foreach (var creature in creaturesList)
+        {
+            //If the creature has a fruit
+            if (creature.GetComponent<cs_creatureData>().creatureFruit != null)
+            {
+                for (int i = 0; i < fruitPoolAmount; i++)
+                {
+                    GameObject newFruit = Instantiate(creature.GetComponent<cs_creatureData>().creatureFruit);
+                    newFruit.transform.SetParent(fruitPoolHolder);
+                    availableFruit.Add(newFruit);
+                    newFruit.SetActive(false);
+                }
+            }
+        }
+        /*fruitPoolHolder = new GameObject("fruitPoolHolder").transform;
         for (int i = 0; i < fruitPoolAmount; i++)
         {
             GameObject newFruit = Instantiate(fruitPrefab);
             newFruit.transform.SetParent(fruitPoolHolder);
             availableFruit.Add(newFruit);
             newFruit.SetActive(false);
-        }
+        }*/
     }
 
     public void CreateFruit(GameObject fruit, Vector3 spawnPosition)
@@ -95,7 +102,7 @@ public class cs_gameManager : MonoBehaviour
             if (creaturesList[creatureInList] == null)
             {
                 creaturesList.RemoveAt(creatureInList);
-                fruitsList.RemoveAt(creatureInList);
+                //fruitsList.RemoveAt(creatureInList);
             }
         }
     }
