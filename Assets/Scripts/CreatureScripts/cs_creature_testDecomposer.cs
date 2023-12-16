@@ -11,10 +11,12 @@ public class cs_creature_testDecomposer : cs_creatureData
         creatureHpCurrent = creatureHpMax;
     }
 
-    public override void CreatureNameDistribution()
+    public override void AssignCreatureIDValues()
     {
         creatureName = "Test Decomposer Cube";
-        creatureType = CreatureType.typeDecomposer;
+        creatureType = CreatureType.t_decomposer;
+        creatureID = CreatureID.c_testDecomposer;
+        creatureFruitID = CreatureFruitID.f_null;
     }
 
     /*public override void Test() //Example of inheriting and overriding functions

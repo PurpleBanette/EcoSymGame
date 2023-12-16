@@ -4,11 +4,11 @@ using UnityEngine;
 
 public enum CreatureType
 {
-    typeNull,
-    typeAutotroph,
-    typeHerbivore,
-    typeOmnivore,
-    typeCarnivore,
-    typeDecomposer
+    t_null,
+    t_autotroph,
+    t_herbivore,
+    t_omnivore,
+    t_carnivore,
+    t_decomposer
 
 }

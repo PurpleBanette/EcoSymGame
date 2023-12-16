@@ -10,10 +10,12 @@ public class cs_creature_testOmnivore : cs_creatureData
         creatureHpCurrent = creatureHpMax;
     }
 
-    public override void CreatureNameDistribution()
+    public override void AssignCreatureIDValues()
     {
         creatureName = "Test Omnivore Cube";
-        creatureType = CreatureType.typeOmnivore;
+        creatureType = CreatureType.t_omnivore;
+        creatureID = CreatureID.c_testOmnivore;
+        creatureFruitID = CreatureFruitID.f_null;
     }
 
     /*public override void Test() //Example of inheriting and overriding functions

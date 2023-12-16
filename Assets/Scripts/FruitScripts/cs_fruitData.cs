@@ -5,10 +5,11 @@ using UnityEngine.Pool;
 
 public class cs_fruitData : MonoBehaviour
 {
-    [SerializeField] float fruitDecayTimer;
-    [SerializeField] float fruitTimeLimit;
+    [SerializeField] protected string fruitName;
+    [SerializeField] protected CreatureFruitID fruitID;
+    [SerializeField] protected float fruitDecayTimer;
+    [SerializeField] protected float fruitTimeLimit;
     [SerializeField] protected int fruitSaturation;
-
     public bool fruitSpawned;
 
     // Start is called before the first frame update
@@ -17,13 +18,24 @@ public class cs_fruitData : MonoBehaviour
         FruitStats();
         //Apply the fruit tag on spawn
         gameObject.tag = "Fruit";
+        AssignFruitIDValues();
     }
     void Start()
     {
-        fruitTimeLimit = 10f;
-        fruitDecayTimer = fruitTimeLimit;
+        FruitTimer();
     }
 
+    public virtual void FruitTimer()
+    {
+        fruitDecayTimer = fruitTimeLimit;
+        fruitTimeLimit = 10f;
+    }
+
+    public virtual void AssignFruitIDValues()
+    {
+        fruitName = "Null";
+        fruitID = CreatureFruitID.f_null;
+    }
     // Update is called once per frame
     void Update()
     {
