@@ -7,18 +7,96 @@ using UnityEngine.UI;
 using Cinemachine;
 using UnityEditor;
 using UnityEngine.AI;
+using UnityEngine.Pool;
 
 public class cs_gameManager : MonoBehaviour
 {
+    [Tooltip("The script instance")]
+    public static cs_gameManager gameManagerInstance;
+
+    [Header("Lists")]
+    [Tooltip("Creature scripts in list")]
+    public List<GameObject> creaturesList;
+    [Tooltip("Creature fruits scripts in list")]
+    public List<GameObject> fruitsList;
+
+    [Header("Object Pools")]
+    public ObjectPool<GameObject> fruitPool;
+    public GameObject creaturePrefab;
+    public GameObject fruitPrefab;
+
+
+
+    public int fruitPoolAmount;
+    public Transform fruitPoolHolder;
+    public int lastFruitPulled;
+    public List<GameObject> availableFruit;
+
     // Start is called before the first frame update
     void Awake()
     {
-    
+        gameManagerInstance = this;
+    }
+
+    void Start()
+    {
+        fruitPoolAmount = 10;
+        GenerateFruitPool();
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        
+        CreatureCleanup();
+    }
+
+    public void GenerateFruitPool()
+    {
+        fruitPoolHolder = new GameObject("fruitPoolHolder").transform;
+        for (int i = 0; i < fruitPoolAmount; i++)
+        {
+            GameObject newFruit = Instantiate(fruitPrefab);
+            newFruit.transform.SetParent(fruitPoolHolder);
+            availableFruit.Add(newFruit);
+            newFruit.SetActive(false);
+        }
+    }
+
+    public void CreateFruit(GameObject fruit, Vector3 spawnPosition)
+    {
+        fruit.transform.position = spawnPosition;
+        fruit.SetActive(true);
+    }
+    public void DestroyFruit(GameObject fruit)
+    {
+        fruit.transform.position = fruitPoolHolder.position;
+        if (availableFruit.Contains(fruit) == false)
+        availableFruit.Add(fruit);
+        fruit.SetActive(false);
+    }
+    public GameObject RequestFruit(List<GameObject> pool)
+    {
+        GameObject returnValue = null;
+        if (pool.Count > 0)
+        {
+            returnValue = pool[0]; //Grabs first object in pool
+            pool.Remove(pool[0]); //Take out of list
+        }
+        //Add to pool
+        return returnValue;
+    }
+
+    //Deletes creatures with their scripts if they are deleted
+    public void CreatureCleanup()
+    {
+        for (var creatureInList = creaturesList.Count - 1; creatureInList > -1; creatureInList--)
+        {
+            //Maybe code to find the creature value
+            if (creaturesList[creatureInList] == null)
+            {
+                creaturesList.RemoveAt(creatureInList);
+                fruitsList.RemoveAt(creatureInList);
+            }
+        }
     }
 }

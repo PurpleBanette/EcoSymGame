@@ -6,33 +6,36 @@ public class cs_creature_testAutotroph : cs_creatureData
 {
     private void Start()
     {
+        gameManagerScript.creaturesList.Add(gameObject); //Adds creature to gameManager
+        gameManagerScript.fruitsList.Add(creatureFruit); //Adds fruit prefab to game manager
+
         IndividualCreatureBaseStatGrowth();
         creatureHpCurrent = creatureHpMax;
         ApplyDexToNavSpeed();
     }
 
-    public override void CreatureMoveRangeDistribution()
+    public override void CreatureMoveRangeDistribution() //Add unique move range
     {
         creatureMoveRange = 3f;
     }
 
-    public override void CreatureNameDistribution()
+    public override void CreatureNameDistribution() //Add unique name
     {
         creatureName = "Test Autotroph Plant";
-        creatureType = "Autotroph";
+        creatureType = CreatureType.typeAutotroph;
     }
 
-    public override void CreatureHungerStart()
+    public override void CreatureHungerStart() //Change hunger start
     {
         creatureHungerMeterCurrent = 40f;
     }
 
-    public override void PhotosynthesisFillAmount()
+    public override void PhotosynthesisFillAmount() //Change how much is filled
     {
         photosynthesisHungerFill = 10f;
     }
 
-    public override void IndividualCreatureBaseStatGrowth()
+    public override void IndividualCreatureBaseStatGrowth() //Individual stats
     {
         baseStr = 1;
         baseDex = 1;
@@ -51,14 +54,8 @@ public class cs_creature_testAutotroph : cs_creatureData
         creatureHpMax = creatureHP;
     }
 
-    public override void ApplyDexToNavSpeed()
-    {
-        creatureNavMeshAgent.speed = creatureDEX;
-    }
-
     public override void SearchForFood() //Autotrophs don't need to search
     {
         creatureAnimator.SetBool("isEating", true);
     }
-
 }

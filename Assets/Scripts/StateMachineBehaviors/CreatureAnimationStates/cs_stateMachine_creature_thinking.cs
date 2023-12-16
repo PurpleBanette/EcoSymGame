@@ -32,11 +32,9 @@ public class cs_stateMachine_creature_thinking : StateMachineBehaviour
                 switch (chooseDecision)
                 {
                     case 0: //Return to idle
-                        Debug.Log("Idle");
                         animator.SetBool("isIdle", true);
                         break;
                     case 1: //Walk in a random direction
-                        Debug.Log("RandomWalk");
                         animator.SetBool("isWalking", true);
                         creature.CreatureRandomMovementRandomization();
                         break;

@@ -17,16 +17,22 @@ public class cs_creatureData : MonoBehaviour
     [SerializeField] protected Collider creatureCollider;
     [Tooltip("The creature's gameobject for referencing")]
     [SerializeField] protected GameObject creatureObj;
-    [Tooltip("The creature's materisl")]
+    [Tooltip("The creature's material")]
     [SerializeField] protected Material creatureMaterial;
     [Tooltip("The creature's animator")]
     [SerializeField] protected Animator creatureAnimator;
+    [Tooltip("The game manager script")]
+    public cs_gameManager gameManagerScript;
+    [Tooltip("The creature's script")]
+    [SerializeField] protected cs_creatureData creatureScript;
+    [Tooltip("AUTOTROPHS ONLY: The creature's fruit")]
+    public GameObject creatureFruit;
 
     [Header("Creature Stats")]
     [Tooltip("The creature's name")]
     [SerializeField] protected string creatureName;
     [Tooltip("The creature's type")]
-    [SerializeField] protected string creatureType;
+    [SerializeField] protected CreatureType creatureType;
     [Tooltip("The creature's health")]
     public int creatureHpCurrent;
     [Tooltip("The creature's maximum health")]
@@ -75,16 +81,23 @@ public class cs_creatureData : MonoBehaviour
     public float creatureThinkTimer;
     [Tooltip("Bool that checks if the creature is hungry")]
     public bool creatureIsHungry;
+    [Tooltip("Checks if the autotroph is requesting a fruit")]
+    public bool requestingFruit = false;
 
     private void Awake()
     {
+        creatureScript = GetComponent<cs_creatureData>();
+        gameManagerScript = GameObject.FindGameObjectWithTag("GameManager").GetComponent<cs_gameManager>();
+
         //Grab all this from the creature
         creatureRigidBody = GetComponent<Rigidbody>();
         creatureCollider = GetComponent<Collider>();
         creatureObj = gameObject;
 
+        //Set this to zero as a default for the pathfinding
         creatureTarget = Vector3.zero;
 
+        //Apply the creature tag on spawn
         gameObject.tag = "Creature";
 
         creatureMaterial = GetComponentInChildren<Renderer>().material;
@@ -106,10 +119,10 @@ public class cs_creatureData : MonoBehaviour
         CreatureHungerSystem(); //Creature's hunger system
     }
 
-    /*public virtual void Test() 
+    private void FixedUpdate()
     {
-        Debug.Log("testing " + this.gameObject.name); 
-    }*/
+        CreatureDeath();
+    }
 
     public void CreatureStatsDistribution() //Starting functions
     {
@@ -121,7 +134,7 @@ public class cs_creatureData : MonoBehaviour
         CreatureLevelUponSpawn();
         CreatureMutationGrowth();
         creatureThinkTimer = 10f;
-        creatureAnimator.SetFloat("animSpeedMultiplier", gradeDexMultiplyer);
+        creatureAnimator.SetFloat("animSpeedMultiplier", gradeDexMultiplyer); //Multiply the animation speed by their dex multiplyer
         CreatureHungerStart();
         PhotosynthesisFillAmount();
         creatureHungerMeterMax = 100f; //Max hunger on the meter
@@ -129,27 +142,36 @@ public class cs_creatureData : MonoBehaviour
 
     public virtual void CreatureMoveRangeDistribution() //May change with calculations later
     {
+        /*This is the range of how far the creature can move from its center position. This number will
+         vary based on creature*/
         creatureMoveRange = 10f;
     }
 
     public virtual void CreatureHungerStart()
     {
+        /*This is the creature's current hunger that will decrease slowly over time. This number will
+         vary based on creature*/
         creatureHungerMeterCurrent = 70f; //Current hunger
     }
 
     public virtual void PhotosynthesisFillAmount()
     {
+        /*This is specifically for autotrophs. It fills their hunger meter after they photosynthesize. Default
+         is 0 will will vary based on individual autotrophs*/
         photosynthesisHungerFill = 0f;
     }
 
     public virtual void CreatureNameDistribution()
     {
+        /*A null check is needed to prevent errors. Each creature will be assigned their name and type*/
         creatureName = null;
-        creatureType = null;
+        creatureType = CreatureType.typeNull;
     }
 
-    public void CreatureStatGradeRandomization() //Randomizes the stat grades that affect the stat growth of the creature
+    public void CreatureStatGradeRandomization() 
     {
+        /*Randomizes the stat grades that affect the stat growth of the creature. The stat grade is from a range
+         of 0(E) through 5(S). Each grade adds a multiplyer to the stats they gain during each level-up.*/
         creatureStatGradeSTR = Random.Range(0, 6);
         creatureStatGradeDEX = Random.Range(0, 6);
         creatureStatGradeINT = Random.Range(0, 6);
@@ -290,8 +312,9 @@ public class cs_creatureData : MonoBehaviour
         }
     }
 
-    public void CreatureSizeRandomization() //Randomizes the size of the creature
+    public void CreatureSizeRandomization() 
     {
+        /*Randomizes the scale of the creature from a range of Tiny to Massive.*/
         creatureSize = Random.Range(0, 6);
         switch (creatureSize)
         {
@@ -316,8 +339,10 @@ public class cs_creatureData : MonoBehaviour
         }
     }
 
-    public void CreatureColorRandomization() //Randomizes slight color variations of the creature
+    public void CreatureColorRandomization() 
     {
+        /*Randomizes slight color variations of the creature. The RGB channels of their material color are converted
+         to HSV, then randomized to an extent, then converted back to RGB to apply the colors to the creature*/
         Color randomizedColor = creatureMaterial.color;
         Color.RGBToHSV(randomizedColor, out creatureColorHue, out creatureColorSaturation, out creatureColorValue);
         creatureColorHue = 0 + Random.Range(0, 361);
@@ -328,13 +353,17 @@ public class cs_creatureData : MonoBehaviour
 
     public void CreatureLevelUponSpawn()
     {
+        /*The creature starts out at level 1 with 0 exp*/
         creatureLevel = 1;
         creatureCurrentExp = 0;
         creatureGoalExp = 100;
     }
 
-    public virtual void IndividualCreatureBaseStatGrowth() //TEMPLATE for stat growth upon level up. Creatures override the base stats depending on their species
+    public virtual void IndividualCreatureBaseStatGrowth()
     {
+        /*TEMPLATE for stat growth upon level up. Creatures override the base stats depending on their species.
+         Upon level up, their stats slightly increase based on a calculation that checks their stat grades*/
+
         //This goes in the creature's Start function
         //creatureHpCurrent = creatureHpMax;
 
@@ -357,42 +386,23 @@ public class cs_creatureData : MonoBehaviour
 
     public void CreatureMutationGrowth()
     {
+        /*The chance of mutation for the creature upon being born. This increases slowly over time and will affect
+         the chances of their offspring being mutated*/
         creatureMutationChance = (Random.Range(0f, 0.1f) / 100f) * 100f; //Calculating percentage from 0% to 100%
     }
 
-    public virtual void ApplyDexToNavSpeed()
+    public void ApplyDexToNavSpeed()
     {
+        /*The creature's movement speed will be affected by their Dexterity*/
         creatureNavMeshAgent.speed = creatureDEX; //Temporary, until a better calculation is made
     }
 
     public void CreatureRandomMovementRandomization()
     {
-        /*int walkableNavmeshMask = 1 << NavMesh.GetAreaFromName("Walkable"); //Sets walkable navmesh to 1
-        float destinationX = Random.Range(-creatureMoveRange, creatureMoveRange); //Random X
-        float destinationZ = Random.Range(-creatureMoveRange, creatureMoveRange); //Random Z
-        RaycastHit destinationYTarget; //The raycasted point after a random position is made
-        NavMeshHit finalNavmeshDestination; //The final point that then agent walks to
-        bool possibleLocation = false; //Bool that checks if the agent can actually walk there
-
-        //Raycast that finds the Y coordinate of the random point + your position
-        Physics.Raycast(new Vector3(transform.position.x + destinationX, transform.position.y + 10f, transform.position.z + destinationZ), Vector3.down, out destinationYTarget, Mathf.Infinity, groundLayer);
-        
-        //Checks if the random point is on the walkable navmesh within a 2ft range
-        possibleLocation = NavMesh.SamplePosition(destinationYTarget.point, out finalNavmeshDestination, 2f, walkableNavmeshMask);
-
-        //Success
-        if (possibleLocation)
-        {
-            creatureTarget = finalNavmeshDestination.position; //Walk here
-            creatureRandomMovementCheck = true; //Creature is now moving
-            creatureAnimator.SetBool("isIdle", false);
-            creatureAnimator.SetBool("isWalking", true);
-        }
-        //Failure
-        else
-        {
-            creatureAnimator.SetBool("isThinking", true);
-        }*/
+        /*This will affect the creature's navigation, affecting what they can and cannot walk on, and what they prefer to walk on.
+         Each terrain piece has its own navmesh layer, and the creature will take those into account when selecting a random
+        raycast spot within range to walk towards. If they cannot walk anywhere, they will attempt to try again or do something
+        else*/
         int nav_notWalkable = 0 << NavMesh.GetAreaFromName("Not Walkable");
         int nav_walkable = 1 << NavMesh.GetAreaFromName("Walkable"); //Sets walkable navmesh to 1
         int nav_grass = 2 << NavMesh.GetAreaFromName("Grass");
@@ -433,7 +443,9 @@ public class cs_creatureData : MonoBehaviour
 
     public void CreatureMovement()
     {
-
+        /*The creature will begin walking towards their selected destination. Their stuck check will decide whether they are
+         stuck or not, by timing how long it takes for them to move. If they take too long to get somewhere, they are considered stuck
+        or lost an will reset.*/
         if (creatureMovementCheck) //If bool is active
         {
             walkStuckCheck -= Time.deltaTime;
@@ -462,6 +474,7 @@ public class cs_creatureData : MonoBehaviour
     }
     void CreatureHungerSystem()
     {
+        /*The creature's hunger meter will slowly decrease over time.*/
         creatureHungerMeterCurrent = (creatureHungerMeterCurrent / creatureHungerMeterMax) * 100f; //Percentage out of 100%
 
         creatureHungerMeterCurrent -= Time.deltaTime / 20; //How long it takes for hunger to drop
@@ -470,10 +483,12 @@ public class cs_creatureData : MonoBehaviour
 
     public void HungerUpdateCheck() //Do not activate on update to save memory
     {
+        /*The creature will check if their hunger reaches a certain threshold. This function
+         is called in the creature's "Thinking" animation state, and checks their hunger
+        before making a decision*/
         if (creatureHungerMeterCurrent <= 40f)
         {
             creatureIsHungry = true;
-            Debug.Log("Hungry");
         }
         else
         {
@@ -483,39 +498,36 @@ public class cs_creatureData : MonoBehaviour
 
     public virtual void SearchForFood()
     {
-        /*int nav_notWalkable = 0 << NavMesh.GetAreaFromName("Not Walkable");
-        int nav_walkable = 1 << NavMesh.GetAreaFromName("Walkable"); //Sets walkable navmesh to 1
-        int nav_grass = 2 << NavMesh.GetAreaFromName("Grass");
-        int nav_dirt = 3 << NavMesh.GetAreaFromName("Dirt");
-        int nav_water = 4 << NavMesh.GetAreaFromName("Water");
-        int nav_rocky = 5 << NavMesh.GetAreaFromName("Rocky");
-        int nav_snow = 6 << NavMesh.GetAreaFromName("Snow");
-        int nav_ice = 7 << NavMesh.GetAreaFromName("Ice");
-        int nav_lava = 8 << NavMesh.GetAreaFromName("Lava");
-
-        Debug.Log("Looking for food");
-        NavMeshHit potentialFoodSource;
-        bool possibleLocation = NavMesh.SamplePosition(transform.position, out potentialFoodSource, creatureMoveRange*2, NavMesh.AllAreas);
-
-        //Inherited code varies based on what the creature considers food 
-        if (possibleLocation && potentialFoodSource.mask == NavMesh.AllAreas)
-        {
-            Debug.Log("I found food in " + potentialFoodSource.mask + " located at " + potentialFoodSource.position);
-            creatureTarget = potentialFoodSource.position; //Walk here
-            creatureMovementCheck = true; //Creature is now moving
-            creatureAnimator.SetBool("isIdle", false);
-            creatureAnimator.SetBool("isWalking", true);
-            CreatureMovement();
-        }
-        else
-        {
-            Debug.Log("Nothing here");
-            CreatureRandomMovementRandomization();
-        }*/
+        /*This is called in the creature's "Thinking" animation state, and will cause
+         the creature to search for food if their hunger is low enough*/
+        
     }
 
-    public void AutotrophPhotosynthesis()
+    public virtual void AutotrophPhotosynthesis()
     {
-        creatureHungerMeterCurrent = creatureHungerMeterCurrent + photosynthesisHungerFill;
+        /*Unique to autotrophs. They will generate a fruit from their object pool, which will increase
+         their hunger meter, and drop a fruit for herbivores*/
+        GameObject newFruit = gameManagerScript.RequestFruit(gameManagerScript.availableFruit);
+        if (newFruit != null)
+        {
+            gameManagerScript.CreateFruit(newFruit, transform.position);
+            newFruit.GetComponent<cs_fruitData>().fruitSpawned = true;
+        }
+        //Switch statement matching creatures + fruits so that each fruit has its own object pool;
+
+        requestingFruit = true;
+        //gameManagerScript.RequestCreatureFruit();
+        creatureHungerMeterCurrent += photosynthesisHungerFill;
+        //Pool fruit
+    }
+
+    //Temporary
+    private void CreatureDeath()
+    {
+        /*Kills the creature if their HP is 0*/
+        if (creatureHpCurrent <= 0f)
+        {
+            Destroy(gameObject);
+        }
     }
 }

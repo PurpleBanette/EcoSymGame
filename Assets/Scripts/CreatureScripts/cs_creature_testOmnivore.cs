@@ -13,7 +13,7 @@ public class cs_creature_testOmnivore : cs_creatureData
     public override void CreatureNameDistribution()
     {
         creatureName = "Test Omnivore Cube";
-        creatureType = "Omnivore";
+        creatureType = CreatureType.typeOmnivore;
     }
 
     /*public override void Test() //Example of inheriting and overriding functions

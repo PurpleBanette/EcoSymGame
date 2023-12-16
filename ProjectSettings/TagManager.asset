@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - Creature
+  - GameManager
+  - Fruit
   layers:
   - Default
   - TransparentFX
